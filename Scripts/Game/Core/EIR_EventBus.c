@@ -1,0 +1,102 @@
+// Callback signature — all subscribers must match this exactly.
+void EIR_EventCallback(string eventName, EIR_EventPayload payload);
+typedef func EIR_EventCallback;
+typedef ScriptInvokerBase<EIR_EventCallback> EIR_EventInvoker;
+
+// Global pub/sub event bus. Any script can fire named events and any
+// other script can subscribe to them with no direct compile dependency
+// between the two sides.
+//
+// ----- Firing an event -----
+//
+//   EIR_MyPayload p = new EIR_MyPayload();
+//   p.someValue = 42;
+//   EIR_EventBus.GetInstance().Fire("my.event", p);
+//
+//   // No data needed? Pass null.
+//   EIR_EventBus.GetInstance().Fire("server.ready");
+//
+// ----- Subscribing -----
+//
+//   // In your class init / component EOnInit:
+//   EIR_EventBus.GetInstance().Subscribe("my.event", this.OnMyEvent);
+//
+//   void OnMyEvent(string eventName, EIR_EventPayload payload)
+//   {
+//       EIR_MyPayload mp = EIR_MyPayload.Cast(payload);
+//       if (!mp)
+//           return;
+//       // use mp.someValue
+//   }
+//
+// ----- Unsubscribing -----
+//
+//   EIR_EventBus.GetInstance().Unsubscribe("my.event", this.OnMyEvent);
+//
+// Firing an event with no subscribers is safe — nothing happens.
+// Subscribers are called synchronously in the order they were inserted.
+
+class EIR_EventBus
+{
+	protected static ref EIR_EventBus s_pInstance;
+	protected ref map<string, ref EIR_EventInvoker> m_Invokers;
+
+	//------------------------------------------------------------------------------------------------
+	static EIR_EventBus GetInstance()
+	{
+		if (!s_pInstance)
+			s_pInstance = new EIR_EventBus();
+
+		return s_pInstance;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	// Subscribe to a named event. callback must match:
+	//   void MyCallback(string eventName, EIR_EventPayload payload)
+	// Inserting the same callback twice will call it twice when the event fires.
+	void Subscribe(string eventName, EIR_EventCallback callback)
+	{
+		if (!m_Invokers)
+			m_Invokers = new map<string, ref EIR_EventInvoker>();
+
+		EIR_EventInvoker invoker = m_Invokers.Get(eventName);
+		if (!invoker)
+		{
+			invoker = new EIR_EventInvoker();
+			m_Invokers.Set(eventName, invoker);
+		}
+
+		invoker.Insert(callback);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	// Unsubscribe a previously registered callback from a named event.
+	// Safe to call if the event name was never subscribed to.
+	void Unsubscribe(string eventName, EIR_EventCallback callback)
+	{
+		if (!m_Invokers)
+			return;
+
+		EIR_EventInvoker invoker = m_Invokers.Get(eventName);
+		if (!invoker)
+			return;
+
+		invoker.Remove(callback);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	// Fire a named event, calling all subscribers synchronously.
+	// payload may be null when the event carries no data.
+	// Safe to call when nobody is subscribed.
+	void Fire(string eventName, EIR_EventPayload payload = null)
+	{
+		if (!m_Invokers)
+			return;
+
+		EIR_EventInvoker invoker = m_Invokers.Get(eventName);
+		if (!invoker)
+			return;
+
+		invoker.Invoke(eventName, payload);
+	}
+}

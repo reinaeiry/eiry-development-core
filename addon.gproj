@@ -1,0 +1,8 @@
+GameProject {
+ ID "eirydevelopmentcore"
+ GUID "68CC68CE30CFEF84"
+ TITLE "eiry development core"
+ Dependencies {
+  "58D0FB3206B6F859"
+ }
+}
