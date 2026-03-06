@@ -851,31 +851,3 @@ Scripts/
       EIR_StringUtils.c
       EIR_WorldUtils.c
 ```
-
----
-
-## Workshop Description
-
-**Short description:**
-
-Core scripting framework for Arma Reforger mod developers. Event bus, net bus, logging, timers, state machines, caching, rate limiting, JSON building, and utility libraries - all in one dependency.
-
-**Full workshop description:**
-
-eiry development core is a foundational scripting library for Arma Reforger mod development. Rather than rewriting the same infrastructure in every project, add this as a dependency and get a full suite of common systems immediately.
-
-Included systems:
-
-- Event Bus - global pub/sub for mod interoperability with no compile-time coupling between mods
-- Feature Registry - runtime capability detection so mods can safely integrate with each other
-- Net Bus - a single component hosts all your RPC traffic with named message routing on both server and client
-- Logger - structured category-based logging with per-category filtering and debug toggling
-- Timer Manager - named timers you can cancel by string key without holding callback references
-- State Machine - simple named FSM with enter/exit invoker callbacks
-- Sequence - chain timed actions that fire one after another with configurable delays
-- Cache - TTL key/value cache for any Managed object
-- Rate Limiter - per-key cooldown enforcement to prevent action spam
-- JSON Builder - fluent builder for constructing valid JSON strings for API payloads
-- Utilities - player resolution, string helpers, math extras, component search, collection operations, world traces, and replication role checks
-
-All classes are globally available after adding this addon as a dependency. No imports required.
