@@ -33,7 +33,7 @@ A foundational scripting framework for Arma Reforger mod development. Provides c
 
 ## Installation
 
-1. Subscribe to **eiry development core** on the Reforger Workshop.
+1. Subscribe to **eiry development core** on the Reforger Workshop, or download this git and add it to your workbench addons dir.
 2. Add it as a dependency in your addon's `.gproj` file.
 3. All classes are globally available — no imports required.
 
