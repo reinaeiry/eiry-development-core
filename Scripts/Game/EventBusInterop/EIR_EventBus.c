@@ -18,8 +18,7 @@ typedef ScriptInvokerBase<EIR_EventCallback> EIR_EventInvoker;
 //
 // ----- Subscribing -----
 //
-//   // In your class init / component EOnInit:
-//   EIR_EventBus.GetInstance().Subscribe("my.event", this.OnMyEvent);
+//   EIR_EventBus.GetInstance().GetInvoker("my.event").Insert(this.OnMyEvent);
 //
 //   void OnMyEvent(string eventName, EIR_EventPayload payload)
 //   {
@@ -31,7 +30,7 @@ typedef ScriptInvokerBase<EIR_EventCallback> EIR_EventInvoker;
 //
 // ----- Unsubscribing -----
 //
-//   EIR_EventBus.GetInstance().Unsubscribe("my.event", this.OnMyEvent);
+//   EIR_EventBus.GetInstance().GetInvoker("my.event").Remove(this.OnMyEvent);
 //
 // Firing an event with no subscribers is safe — nothing happens.
 // Subscribers are called synchronously in the order they were inserted.
@@ -51,10 +50,9 @@ class EIR_EventBus
 	}
 
 	//------------------------------------------------------------------------------------------------
-	// Subscribe to a named event. callback must match:
-	//   void MyCallback(string eventName, EIR_EventPayload payload)
-	// Inserting the same callback twice will call it twice when the event fires.
-	void Subscribe(string eventName, EIR_EventCallback callback)
+	// Returns the invoker for the named event, creating it if it does not exist.
+	// Use .Insert(this.MyCallback) to subscribe and .Remove(this.MyCallback) to unsubscribe.
+	EIR_EventInvoker GetInvoker(string eventName)
 	{
 		if (!m_Invokers)
 			m_Invokers = new map<string, ref EIR_EventInvoker>();
@@ -66,22 +64,7 @@ class EIR_EventBus
 			m_Invokers.Set(eventName, invoker);
 		}
 
-		invoker.Insert(callback);
-	}
-
-	//------------------------------------------------------------------------------------------------
-	// Unsubscribe a previously registered callback from a named event.
-	// Safe to call if the event name was never subscribed to.
-	void Unsubscribe(string eventName, EIR_EventCallback callback)
-	{
-		if (!m_Invokers)
-			return;
-
-		EIR_EventInvoker invoker = m_Invokers.Get(eventName);
-		if (!invoker)
-			return;
-
-		invoker.Remove(callback);
+		return invoker;
 	}
 
 	//------------------------------------------------------------------------------------------------

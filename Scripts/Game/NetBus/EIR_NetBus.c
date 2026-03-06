@@ -19,8 +19,7 @@ typedef ScriptInvokerBase<EIR_NetHandler> EIR_NetHandlerInvoker;
 //   EIR_NetBusComponent.GetInstance().SendToServer("player.action", payload);
 //
 // ----- Receiving on the client -----
-//   // In your client-side component init:
-//   EIR_NetBus.GetInstance().RegisterClientHandler("quest.update", this.OnQuestUpdate);
+//   EIR_NetBus.GetInstance().GetClientInvoker("quest.update").Insert(this.OnQuestUpdate);
 //
 //   void OnQuestUpdate(string typeId, string payload, int fromId)
 //   {
@@ -28,7 +27,7 @@ typedef ScriptInvokerBase<EIR_NetHandler> EIR_NetHandlerInvoker;
 //   }
 //
 // ----- Receiving on the server -----
-//   EIR_NetBus.GetInstance().RegisterServerHandler("player.action", this.OnPlayerAction);
+//   EIR_NetBus.GetInstance().GetServerInvoker("player.action").Insert(this.OnPlayerAction);
 //
 //   void OnPlayerAction(string typeId, string payload, int fromId)
 //   {
@@ -36,16 +35,15 @@ typedef ScriptInvokerBase<EIR_NetHandler> EIR_NetHandlerInvoker;
 //   }
 //
 // Multiple handlers may be registered for the same typeId — all are called.
-// Registering the same handler twice will call it twice per dispatch.
 
 class EIR_NetBus
 {
 	protected static ref EIR_NetBus s_pInstance;
 
-	// Handlers called when a message arrives on the client (sent from server).
+	// Invokers called when a message arrives on the client (sent from server).
 	protected ref map<string, ref EIR_NetHandlerInvoker> m_ClientHandlers;
 
-	// Handlers called when a message arrives on the server (sent from a client).
+	// Invokers called when a message arrives on the server (sent from a client).
 	protected ref map<string, ref EIR_NetHandlerInvoker> m_ServerHandlers;
 
 	//------------------------------------------------------------------------------------------------
@@ -58,31 +56,18 @@ class EIR_NetBus
 	}
 
 	//------------------------------------------------------------------------------------------------
-	// Register a handler called when this typeId is received on the client.
-	void RegisterClientHandler(string typeId, EIR_NetHandler callback)
+	// Returns the client-side invoker for typeId, creating it if needed.
+	// Use .Insert(this.MyCallback) / .Remove(this.MyCallback) to manage subscriptions.
+	EIR_NetHandlerInvoker GetClientInvoker(string typeId)
 	{
-		RegisterInMap(m_ClientHandlers, typeId, callback);
+		return GetOrCreateInvoker(m_ClientHandlers, typeId);
 	}
 
 	//------------------------------------------------------------------------------------------------
-	// Register a handler called when this typeId is received on the server.
-	void RegisterServerHandler(string typeId, EIR_NetHandler callback)
+	// Returns the server-side invoker for typeId, creating it if needed.
+	EIR_NetHandlerInvoker GetServerInvoker(string typeId)
 	{
-		RegisterInMap(m_ServerHandlers, typeId, callback);
-	}
-
-	//------------------------------------------------------------------------------------------------
-	// Remove a previously registered client-side handler.
-	void UnregisterClientHandler(string typeId, EIR_NetHandler callback)
-	{
-		UnregisterFromMap(m_ClientHandlers, typeId, callback);
-	}
-
-	//------------------------------------------------------------------------------------------------
-	// Remove a previously registered server-side handler.
-	void UnregisterServerHandler(string typeId, EIR_NetHandler callback)
-	{
-		UnregisterFromMap(m_ServerHandlers, typeId, callback);
+		return GetOrCreateInvoker(m_ServerHandlers, typeId);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -100,7 +85,7 @@ class EIR_NetBus
 	}
 
 	//------------------------------------------------------------------------------------------------
-	protected void RegisterInMap(out map<string, ref EIR_NetHandlerInvoker> handlerMap, string typeId, EIR_NetHandler callback)
+	protected EIR_NetHandlerInvoker GetOrCreateInvoker(out map<string, ref EIR_NetHandlerInvoker> handlerMap, string typeId)
 	{
 		if (!handlerMap)
 			handlerMap = new map<string, ref EIR_NetHandlerInvoker>();
@@ -112,20 +97,7 @@ class EIR_NetBus
 			handlerMap.Set(typeId, invoker);
 		}
 
-		invoker.Insert(callback);
-	}
-
-	//------------------------------------------------------------------------------------------------
-	protected void UnregisterFromMap(map<string, ref EIR_NetHandlerInvoker> handlerMap, string typeId, EIR_NetHandler callback)
-	{
-		if (!handlerMap)
-			return;
-
-		EIR_NetHandlerInvoker invoker = handlerMap.Get(typeId);
-		if (!invoker)
-			return;
-
-		invoker.Remove(callback);
+		return invoker;
 	}
 
 	//------------------------------------------------------------------------------------------------
