@@ -35,7 +35,7 @@ A foundational scripting framework for Arma Reforger mod development. Provides c
 
 1. Subscribe to **eiry development core** on the Reforger Workshop, or download this git and add it to your workbench addons dir.
 2. Add it as a dependency in your addon's `.gproj` file.
-3. All classes are globally available — no imports required.
+3. All classes are globally available, no imports required.
 
 ---
 
@@ -47,7 +47,7 @@ A foundational scripting framework for Arma Reforger mod development. Provides c
 
 **Files:** `Scripts/Game/EventBusInterop/EIR_EventBus.c`, `EIR_EventPayload.c`, `EIR_EventNames.c`
 
-A global publish/subscribe event bus. Any script can fire named events and any other script can subscribe to them — **with no compile-time dependency between the two sides**. This is the primary mechanism for optional mod interoperability.
+A global publish/subscribe event bus. Any script can fire named events and any other script can subscribe to them - **with no compile-time dependency between the two sides**. This is the primary mechanism for optional mod interoperability.
 
 #### Firing an event
 
@@ -97,9 +97,9 @@ class EIR_QuestCompletedPayload : EIR_EventPayload
 ```
 
 #### Key behaviours
-- Firing an event with no subscribers is safe — nothing happens.
+- Firing an event with no subscribers is safe - nothing happens.
 - Multiple handlers may be registered for the same event name.
-- `GetInvoker()` creates the invoker on first call — there is no cost to subscribing before anything fires.
+- `GetInvoker()` creates the invoker on first call - there is no cost to subscribing before anything fires.
 - Subscribers are called synchronously in insertion order.
 
 ---
@@ -142,7 +142,7 @@ foreach (string name : features)
 #### Key behaviours
 - Registering the same feature name twice is silently ignored.
 - Returns empty string for version if the feature is not registered.
-- Convention for feature names: `"author.feature"` — e.g. `"eir.questing"`, `"eir.economy"`.
+- Convention for feature names: `"author.feature"` - e.g. `"eir.questing"`, `"eir.economy"`.
 
 ---
 
@@ -204,9 +204,9 @@ void OnPlayerAction(string typeId, string payload, int fromId)
 ```
 
 #### Key behaviours
-- Listen-server hosts are handled correctly — `SendToServer` routes locally without a network hop.
+- Listen-server hosts are handled correctly - `SendToServer` routes locally without a network hop.
 - `fromId` is `-1` when a message originates from the server.
-- The payload is a freeform string — use `EIR_JsonBuilder` to structure it.
+- The payload is a freeform string - use `EIR_JsonBuilder` to structure it.
 
 ---
 
@@ -411,7 +411,7 @@ seq.Start(); // restarts from step 0 even if already running
 
 #### Key behaviours
 - Steps with `delaySeconds = 0` fire synchronously within the same frame.
-- `Stop()` cancels any pending step — already-fired steps are not undone.
+- `Stop()` cancels any pending step - already-fired steps are not undone.
 - Step callbacks have no parameters: `void MyCallback() { ... }`
 
 ---
@@ -420,7 +420,7 @@ seq.Start(); // restarts from step 0 even if already running
 
 **File:** `Scripts/Game/Cache/EIR_Cache.c`
 
-TTL-based key/value cache for `Managed` objects. Create one instance per system — this is not a singleton.
+TTL-based key/value cache for `Managed` objects. Create one instance per system - this is not a singleton.
 
 #### Usage
 
@@ -431,11 +431,11 @@ protected ref EIR_Cache m_PlayerDataCache = new EIR_Cache();
 // Store for 30 seconds
 m_PlayerDataCache.Set("player.5", myDataObject, 30.0);
 
-// Retrieve — returns null if expired or not found
+// Retrieve - returns null if expired or not found
 MyDataClass data = MyDataClass.Cast(m_PlayerDataCache.Get("player.5"));
 if (!data)
 {
-    // cache miss — fetch from source
+    // cache miss - fetch from source
 }
 
 // Check without retrieving
@@ -510,7 +510,7 @@ m_NotifLimiter.ResetAll();          // reset all keys
 
 **File:** `Scripts/Game/Json/EIR_JsonBuilder.c`
 
-Fluent builder for constructing JSON strings. Enfusion has no built-in serialiser — this covers the common cases needed for NetBus payloads and web API integration.
+Fluent builder for constructing JSON strings. Enfusion has no built-in serialiser - this covers the common cases needed for NetBus payloads and web API integration.
 
 #### Building an object
 
